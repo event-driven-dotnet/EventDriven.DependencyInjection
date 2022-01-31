@@ -20,8 +20,11 @@ namespace EventDriven.DependencyInjection
             this IServiceCollection services, IConfiguration config)
             where TAppSettings : class
         {
-            services.Configure<TAppSettings>(
-                config.GetSection(typeof(TAppSettings).Name));
+            var settingsName = typeof(TAppSettings).Name;
+            var configSection = config.GetSection(settingsName);
+            if (!configSection.Exists())
+                throw new Exception($"Configuration section '{settingsName}' not present in app settings.");
+            services.Configure<TAppSettings>(configSection);
             services.AddTransient(sp =>
                 sp.GetRequiredService<IOptions<TAppSettings>>().Value);
             return services;
